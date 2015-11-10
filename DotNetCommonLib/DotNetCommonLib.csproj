@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3275F5C9-1115-4703-9746-94A37B449BE3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DotNetCommonLib</RootNamespace>
+    <AssemblyName>DotNetCommonLib</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\ConvertLeave\ConvertLeave\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\DotNetCommonLib.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NPOI, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\NPOI\NPOI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI.OOXML, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\NPOI\NPOI.OOXML.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\NPOI\NPOI.OpenXml4Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.OracleClient" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Authenticaion\DomainAuthentication.cs" />
+    <Compile Include="CommonHelper\ExcelHelper.cs" />
+    <Compile Include="CommonHelper\SecurityHelper.cs" />
+    <Compile Include="CommonHelper\UploadHelper.cs" />
+    <Compile Include="CSharpExtention\HttpExtention.cs" />
+    <Compile Include="CSharpExtention\DataTableExtention.cs" />
+    <Compile Include="CSharpExtention\IEnumeratorExtention.cs" />
+    <Compile Include="CSharpExtention\StringExtention.cs" />
+    <Compile Include="DataAccess\DataAccessFactory.cs" />
+    <Compile Include="DataAccess\DataSourceType.cs" />
+    <Compile Include="DataAccess\IDataAccess.cs" />
+    <Compile Include="DataAccess\OracleDataAccess.cs" />
+    <Compile Include="DataAccess\SqlServerDataAccess.cs" />
+    <Compile Include="ORM\ColumnAttribute.cs" />
+    <Compile Include="ORM\ConditionBuilder.cs" />
+    <Compile Include="ORM\EntityBase.cs" />
+    <Compile Include="ORM\EntityList.cs" />
+    <Compile Include="ORM\ORMHelper.cs" />
+    <Compile Include="ORM\SqlCondition.cs" />
+    <Compile Include="ORM\TableActionType.cs" />
+    <Compile Include="ORM\TableAttribute.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\NPOI\ICSharpCode.SharpZipLib.dll" />
+    <Content Include="lib\NPOI\NPOI.dll" />
+    <Content Include="lib\NPOI\NPOI.OOXML.dll" />
+    <Content Include="lib\NPOI\NPOI.OpenXml4Net.dll" />
+    <Content Include="lib\NPOI\NPOI.OpenXmlFormats.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
