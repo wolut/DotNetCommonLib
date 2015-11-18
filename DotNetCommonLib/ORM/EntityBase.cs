@@ -57,8 +57,6 @@ namespace DotNetCommonLib
         private DataTable _data = null;
         #endregion
 
-
-
         #region 構造方法
         /// <summary>
         /// 默認構造器。
@@ -134,7 +132,7 @@ namespace DotNetCommonLib
         private void GetDataById<T>(T id)
         {
             string sql = string.Format("SELECT * FROM {0} WHERE {1}={2}", _tablename.Wrap(DataAccessFactory.ColumnWrap), _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix + _pkInfo.Name);
-            IDataParameter param = DataAccessFactory.CreateParameter(_pkInfo.Name, id);
+            IDataParameter param = DataAccessFactory.CreateParameter(_pkInfo, id);
             _data = DataAccessFactory.Create().ExecuteDataTable(CommandType.Text, sql, param);
             if (_data.Rows.Count > 0)
                 RowToEntity(_data.Rows[0]);
@@ -175,6 +173,9 @@ namespace DotNetCommonLib
                     item.SetValue(this, row[item.Name] ?? false, null);
                 //可空布爾類型
                 else if (item.PropertyType == typeof(bool?))
+                    item.SetValue(this, row[item.Name], null);
+                //Guid
+                else if (item.PropertyType == typeof(Guid))
                     item.SetValue(this, row[item.Name], null);
                 //時間類型
                 else if (item.PropertyType == typeof(DateTime))
@@ -290,18 +291,25 @@ namespace DotNetCommonLib
             }
             else
             {
-                StringBuilder conditionBuilder = new StringBuilder();
-                conditionBuilder.AppendFormat("AND {0}={1}{2} ", _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix, _pkInfo.Name);
-                StringBuilder setValueBuilder = new StringBuilder();
-                List<IDataParameter> paramList = new List<IDataParameter>();
-                paramList.Add(DataAccessFactory.CreateParameter(_pkInfo.Name, _pkInfo.GetValue(this, null)));//主鍵參數
-                foreach (PropertyInfo item in _myProperties)
+                try
                 {
-                    setValueBuilder.AppendFormat("{0}={1}{2},", item.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix, item.Name);
-                    paramList.Add(DataAccessFactory.CreateParameter(item.Name, item.GetValue(this, null)));//字段參數
+                    StringBuilder conditionBuilder = new StringBuilder();
+                    conditionBuilder.AppendFormat("AND {0}={1}{2} ", _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix, _pkInfo.Name);
+                    StringBuilder setValueBuilder = new StringBuilder();
+                    List<IDataParameter> paramList = new List<IDataParameter>();
+                    paramList.Add(DataAccessFactory.CreateParameter(_pkInfo, _pkInfo.GetValue(this, null)));//主鍵參數
+                    foreach (PropertyInfo item in _myProperties)
+                    {
+                        setValueBuilder.AppendFormat("{0}={1}{2},", item.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix, item.Name);
+                        paramList.Add(DataAccessFactory.CreateParameter(item, item.GetValue(this, null)));//字段參數
+                    }
+                    string sql = string.Format("UPDATE {0} SET {1} WHERE 1=1 {2}", _tablename.Wrap(DataAccessFactory.ColumnWrap), setValueBuilder.ToString().TrimEnd(','), conditionBuilder.ToString().TrimEnd(' '));
+                    DataAccessFactory.Create().ExecuteNonQuery(CommandType.Text, sql, paramList.ToArray());
                 }
-                string sql = string.Format("UPDATE {0} SET {1} WHERE 1=1 {2}", _tablename.Wrap(DataAccessFactory.ColumnWrap), setValueBuilder.ToString().TrimEnd(','), conditionBuilder.ToString().TrimEnd(' '));
-                DataAccessFactory.Create().ExecuteNonQuery(CommandType.Text, sql, paramList.ToArray());
+                catch (Exception ex)
+                {
+                    throw new Exception("來自EntityBase.Update()的錯誤:" + ex.Message);
+                }
             }
         }
 
