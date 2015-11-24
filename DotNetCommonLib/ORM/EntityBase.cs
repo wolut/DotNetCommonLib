@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using DotNetCommonLib;
 using System.Data;
 using System.Collections.Generic;
 using System.Text;
-using System.ComponentModel;
 
 namespace DotNetCommonLib
 {
@@ -32,6 +30,11 @@ namespace DotNetCommonLib
         private string _tablename = string.Empty;
 
         /// <summary>
+        /// 执行串表查询时表示的别名。
+        /// </summary>
+        private string _aliasName = string.Empty;
+
+        /// <summary>
         /// 標記實體類當前的狀態是否為刪除。
         /// </summary>
         private bool Deleted = false;
@@ -55,6 +58,8 @@ namespace DotNetCommonLib
         /// 用於保存從DB取得的數據。
         /// </summary>
         private DataTable _data = null;
+
+        private Dictionary<string, JoinTable> _joinTables = new Dictionary<string, JoinTable>();
         #endregion
 
         #region 構造方法
@@ -88,6 +93,13 @@ namespace DotNetCommonLib
             GetDataById<string>(id);
         }
 
+        public EntityBase(Guid id)
+            : this()
+        {
+            Inserted = true;
+            GetDataById<Guid>(id);
+        }
+
         public EntityBase(ConditionBuilder condBuilder)
             : this()
         {
@@ -102,20 +114,36 @@ namespace DotNetCommonLib
         protected void GetBindingInfo()
         {
             //獲取關聯表名
-            object[] tableAttribute = this.GetType().GetCustomAttributes(typeof(TableAttribute), false);
-            _tablename = (tableAttribute[0] as TableAttribute).TableName;
+            TableAttribute tableAttr = this.GetType().GetCustomAttributes(typeof(TableAttribute), false)[0] as TableAttribute;
+            _tablename = tableAttr.TableName.ToUpper().Wrap(DataAccessFactory.ColumnWrap);
+            _aliasName = tableAttr.AliasName;
             //獲取屬性內容
             foreach (var item in this.GetType().GetProperties())
             {
                 object[] columnAttribute = item.GetCustomAttributes(typeof(ColumnAttribute), false);
+                object[] joinAttrs = item.GetCustomAttributes(typeof(LeftJoinAttribute), false);
                 if (columnAttribute.Length > 0)
                 {
-                    if ((columnAttribute[0] as ColumnAttribute).IsPrimaryKey)
+                    ColumnAttribute colAttr = (columnAttribute[0] as ColumnAttribute);
+                    if (colAttr.IsPrimaryKey)
                     {
                         _pkInfo = item;//獲取主鍵屬性
                     }
-                    if ((columnAttribute[0] as ColumnAttribute).IsAutoIncrement)
-                        _isPKAutoIncrement = true;//獲取自增長屬性
+                }
+                else if (joinAttrs.Length > 0)//收集串表栏位
+                {
+                    LeftJoinAttribute joinAttr = (joinAttrs[0] as LeftJoinAttribute);
+                    joinAttr.ColumnAlias = item.Name;
+                    if (!_joinTables.ContainsKey(joinAttr.Alias))
+                    {
+                        JoinTable jt = new JoinTable(joinAttr.TableName, joinAttr.Alias, joinAttr.JoinID, joinAttr.ForeignKey);
+                        jt.JoinColumns.Add(joinAttr);
+                        _joinTables.Add(joinAttr.Alias, jt);
+                    }
+                    else
+                    {
+                        _joinTables[joinAttr.Alias].JoinColumns.Add(joinAttr);
+                    }
                 }
                 else
                 {
@@ -131,7 +159,7 @@ namespace DotNetCommonLib
         /// <param name="id">表的ID值</param>
         private void GetDataById<T>(T id)
         {
-            string sql = string.Format("SELECT * FROM {0} WHERE {1}={2}", _tablename.Wrap(DataAccessFactory.ColumnWrap), _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix + _pkInfo.Name);
+            string sql = string.Format("SELECT {0} {1} {2}", GetSelectColumnString(), GetSelectFromString(), GetSelectWhereStringById());
             IDataParameter param = DataAccessFactory.CreateParameter(_pkInfo, id);
             _data = DataAccessFactory.Create().ExecuteDataTable(CommandType.Text, sql, param);
             if (_data.Rows.Count > 0)
@@ -142,12 +170,78 @@ namespace DotNetCommonLib
 
         private void GetDataByCondition(ConditionBuilder condBuilder)
         {
-            string sql = string.Format("SELECT * FROM {0} WHERE 1=1{1}", _tablename.ToUpper().Wrap(DataAccessFactory.ColumnWrap), condBuilder.ConditionString);
+            //TODO:这里也是一样的，需要重新组装连接表的SQL语句，设想再开一个私有方法来处理。2015/11/21
+            string sql = string.Format("SELECT {0} {1} WHERE 1=1 {2}", GetSelectColumnString(), GetSelectFromString(), condBuilder.ConditionString);
             _data = DataAccessFactory.Create().ExecuteDataTable(CommandType.Text, sql, condBuilder.ConditionParameter);
             if (_data.Rows.Count > 0)
                 RowToEntity(_data.Rows[0]);
             else
                 _data = null;
+        }
+
+        /// <summary>
+        /// 组装SQL语句的查询栏位部分。
+        /// </summary>
+        private string GetSelectColumnString()
+        {
+            string columnStr = _aliasName.Wrap(DataAccessFactory.ColumnWrap) + "." + _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap);
+            foreach (var item in _myProperties)
+            {
+                columnStr += "," + item.Name;
+            }
+            foreach (var join in _joinTables.Values)
+            {
+                foreach (var attr in join.JoinColumns)
+                {
+                    columnStr += string.Format(",{0}.{1} AS {2}", attr.Alias.Wrap(DataAccessFactory.ColumnWrap), attr.SelectColumn.Wrap(DataAccessFactory.ColumnWrap), attr.ColumnAlias);
+                }
+            }
+            return columnStr;
+        }
+
+        /// <summary>
+        /// 组装SQL语句的串表部分。
+        /// </summary>
+        /// <returns></returns>
+        private string GetSelectFromString()
+        {
+            string fromStr = string.Format("FROM {0}", _tablename);
+            if (_joinTables.Count == 0)
+            {
+                return fromStr;
+            }
+            else
+            {
+                fromStr += " AS " + _aliasName;
+                foreach (var item in _joinTables.Values)
+                {
+                    fromStr += string.Format(" LEFT JOIN {0} AS {1} ON {1}.{2}={3}.{4}"
+                        , item.TableName.Wrap(DataAccessFactory.ColumnWrap)
+                        , item.Alias
+                        , item.JoinID.Wrap(DataAccessFactory.ColumnWrap)
+                        , _aliasName
+                        , item.ForeignKey);
+                }
+                return fromStr;
+            }
+        }
+
+        /// <summary>
+        /// 组装SQL语句的Where条件部分
+        /// </summary>
+        /// <returns></returns>
+        private string GetSelectWhereStringById()
+        {
+            string whereStr = "WHERE 1=1";
+            if (_joinTables.Count == 0)
+            {
+                whereStr += string.Format(" AND {0}={1}", _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix + _pkInfo.Name);
+            }
+            else
+            {
+                whereStr += string.Format(" AND {0}.{1}={2}", _aliasName, _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix + _pkInfo.Name);
+            }
+            return whereStr;
         }
 
         /// <summary>

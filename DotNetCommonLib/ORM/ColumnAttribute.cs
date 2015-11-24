@@ -8,20 +8,20 @@ namespace DotNetCommonLib
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     public class ColumnAttribute : Attribute
     {
+        private bool _isPrimaryKey;
         /// <summary>
         /// 描述欄位是否為表主鍵。
         /// </summary>
-        private bool _isPrimaryKey;
         public bool IsPrimaryKey
         {
             get { return _isPrimaryKey; }
             set { _isPrimaryKey = value; }
         }
 
+        private bool _isAutoIncrement;
         /// <summary>
         /// 描述欄位是否為自增長欄位。
         /// </summary>
-        private bool _isAutoIncrement;
         public bool IsAutoIncrement
         {
             get { return _isAutoIncrement; }

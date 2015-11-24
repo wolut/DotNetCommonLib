@@ -12,7 +12,6 @@ namespace DotNetCommonLib
         /// 表的名稱。
         /// </summary>
         private string _tablename;
-
         /// <summary>
         /// 映射為表的名稱。
         /// </summary>
@@ -20,6 +19,13 @@ namespace DotNetCommonLib
         {
             get { return _tablename; }
             set { _tablename = value; }
+        }
+
+        private string _aliasName;
+        public string AliasName
+        {
+            get { return _aliasName; }
+            set { _aliasName = value; }
         }
     }
 }

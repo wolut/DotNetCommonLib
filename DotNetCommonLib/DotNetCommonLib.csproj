@@ -75,6 +75,8 @@
     <Compile Include="ORM\ConditionBuilder.cs" />
     <Compile Include="ORM\EntityBase.cs" />
     <Compile Include="ORM\EntityList.cs" />
+    <Compile Include="ORM\JoinTable.cs" />
+    <Compile Include="ORM\LeftJoinAttribute.cs" />
     <Compile Include="ORM\ORMHelper.cs" />
     <Compile Include="ORM\SqlCondition.cs" />
     <Compile Include="ORM\TableActionType.cs" />
