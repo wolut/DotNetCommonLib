@@ -9,7 +9,7 @@ using System.Configuration;
 
 namespace DotNetCommonLib
 {
-    class OracleDataAccess : IDataAccess, IDisposable
+    public class OracleDataAccess : IDataAccess, IDisposable
     {
         #region 字段
         private static string _globalConnectionString = string.Empty;

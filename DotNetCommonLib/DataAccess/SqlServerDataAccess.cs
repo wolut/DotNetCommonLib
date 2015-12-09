@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 
 namespace DotNetCommonLib
 {
-    class SqlServerDataAccess : IDataAccess, IDisposable
+    public class SqlServerDataAccess : IDataAccess, IDisposable
     {
         #region 字段
         private static string _globalConnectionString = string.Empty;
