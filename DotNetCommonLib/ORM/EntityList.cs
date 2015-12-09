@@ -15,6 +15,7 @@ namespace DotNetCommonLib
         private string _tableName;
         private List<T> _entityList = new List<T>();
         private DataTable _dataTable = null;
+        protected string QueryString = string.Empty;
 
         public string TableName
         {
@@ -40,8 +41,18 @@ namespace DotNetCommonLib
         /// </summary>
         public EntityList()
         {
-            string sql = string.Format("SELECT * FROM {0} WHERE 1=1", TableName.ToUpper().Wrap(DataAccessFactory.ColumnWrap));
+            string sql = string.Empty;
+            if (QueryString.IsNullOrEmpty())
+                sql = string.Format("SELECT * FROM {0} WHERE 1=1", TableName.ToUpper().Wrap(DataAccessFactory.ColumnWrap));
+            else
+                sql = QueryString;
             _dataTable = DataAccessFactory.Create().ExecuteDataTable(sql);
+            DataTableToEntities(_dataTable);
+        }
+
+        public EntityList(string QueryString)
+        {
+            _dataTable = DataAccessFactory.Create().ExecuteDataTable(QueryString);
             DataTableToEntities(_dataTable);
         }
 

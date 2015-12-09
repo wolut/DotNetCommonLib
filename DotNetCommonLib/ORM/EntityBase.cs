@@ -184,7 +184,9 @@ namespace DotNetCommonLib
         /// </summary>
         private string GetSelectColumnString()
         {
-            string columnStr = _aliasName.Wrap(DataAccessFactory.ColumnWrap) + "." + _pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap);
+            string columnStr=_pkInfo.Name.Wrap(DataAccessFactory.ColumnWrap);
+            if (!_aliasName.IsNullOrEmpty())
+                columnStr = _aliasName.Wrap(DataAccessFactory.ColumnWrap) + "." + columnStr;
             foreach (var item in _myProperties)
             {
                 columnStr += "," + item.Name;
@@ -212,7 +214,8 @@ namespace DotNetCommonLib
             }
             else
             {
-                fromStr += " AS " + _aliasName;
+                if(!_aliasName.IsNullOrEmpty())
+                    fromStr += " AS " + _aliasName;
                 foreach (var item in _joinTables.Values)
                 {
                     fromStr += string.Format(" LEFT JOIN {0} AS {1} ON {1}.{2}={3}.{4}"
@@ -319,7 +322,7 @@ namespace DotNetCommonLib
             }
             //組裝SQL語句
             string sql = string.Format("INSERT INTO {0} ({1}) VALUES ({2})"
-                , _tablename.ToUpper().Wrap(DataAccessFactory.ColumnWrap)
+                , _tablename
                 , fieldBuilder.ToString().TrimEnd(',')
                 , valueBuilder.ToString().TrimEnd(',')
             );
@@ -397,7 +400,7 @@ namespace DotNetCommonLib
                         setValueBuilder.AppendFormat("{0}={1}{2},", item.Name.Wrap(DataAccessFactory.ColumnWrap), DataAccessFactory.ParameterFix, item.Name);
                         paramList.Add(DataAccessFactory.CreateParameter(item, item.GetValue(this, null)));//字段參數
                     }
-                    string sql = string.Format("UPDATE {0} SET {1} WHERE 1=1 {2}", _tablename.Wrap(DataAccessFactory.ColumnWrap), setValueBuilder.ToString().TrimEnd(','), conditionBuilder.ToString().TrimEnd(' '));
+                    string sql = string.Format("UPDATE {0} SET {1} WHERE 1=1 {2}", _tablename, setValueBuilder.ToString().TrimEnd(','), conditionBuilder.ToString().TrimEnd(' '));
                     DataAccessFactory.Create().ExecuteNonQuery(CommandType.Text, sql, paramList.ToArray());
                 }
                 catch (Exception ex)

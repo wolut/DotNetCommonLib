@@ -82,15 +82,15 @@ namespace DotNetCommonLib
                     for (int j = 0; j < table.Columns.Count; j++)
                     {
                         if (table.Rows[i][j] == DBNull.Value)
-                            rowBuilder.AppendFormat("{0}:null,",table.Columns[j].ColumnName);
+                            rowBuilder.AppendFormat("\"{0}\":null,", table.Columns[j].ColumnName);
                         else if (table.Columns[j].DataType == typeof(DateTime))
-                            rowBuilder.AppendFormat("{0}:'{1}',", table.Columns[j].ColumnName, ((DateTime)table.Rows[i][j]).ToString("yyyy/MM/dd HH:mm:ss"));
+                            rowBuilder.AppendFormat("\"{0}\":\"{1}\",", table.Columns[j].ColumnName, ((DateTime)table.Rows[i][j]).ToString("yyyy/MM/dd HH:mm:ss"));
                         else if (table.Columns[j].DataType == typeof(int) || table.Columns[j].DataType == typeof(double) || table.Columns[j].DataType == typeof(decimal))
-                            rowBuilder.AppendFormat("{0}:{1},", table.Columns[j].ColumnName, table.Rows[i][j]);
+                            rowBuilder.AppendFormat("\"{0}\":{1},", table.Columns[j].ColumnName, table.Rows[i][j]);
                         else if (table.Columns[j].DataType == typeof(bool))
-                            rowBuilder.AppendFormat("{0}:{1},", table.Columns[j].ColumnName, (bool)table.Rows[i][j] ? "true" : "false");
+                            rowBuilder.AppendFormat("\"{0}\":{1},", table.Columns[j].ColumnName, (bool)table.Rows[i][j] ? "true" : "false");
                         else
-                            rowBuilder.AppendFormat("{0}:'{1}',", table.Columns[j].ColumnName, table.Rows[i][j].ToString());
+                            rowBuilder.AppendFormat("\"{0}\":\"{1}\",", table.Columns[j].ColumnName, table.Rows[i][j].ToString());
                     }
                     jsonBuilder.AppendFormat("{0},", rowBuilder.ToString().TrimEnd(',').Wrap("{}"));
                 }
