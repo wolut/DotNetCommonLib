@@ -50,11 +50,6 @@ namespace DotNetCommonLib
         private bool Disposed = false;
 
         /// <summary>
-        /// 標記此對象是否已被初始化。
-        /// </summary>
-        private bool Initialized = false;
-
-        /// <summary>
         /// 用於保存從DB取得的數據。
         /// </summary>
         private DataTable _data = null;

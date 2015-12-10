@@ -6,6 +6,9 @@ using System.Data.SqlClient;
 
 namespace DotNetCommonLib
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SqlServerDataAccess : IDataAccess, IDisposable
     {
         #region 字段
@@ -40,9 +43,7 @@ namespace DotNetCommonLib
         /// </summary>
         static SqlServerDataAccess()
         {
-            _globalConnectionString = ConfigurationManager.ConnectionStrings["System"].ConnectionString ?? ConfigurationManager.AppSettings.Get("System");
-            if (string.IsNullOrEmpty(_globalConnectionString))
-                throw new Exception("來自DotNetCommonLib.SqlServerDataAccess的錯誤:抓取不到配置文件中的連接字符串。");
+            _globalConnectionString = ConfigurationManager.ConnectionStrings["System"] == null ? "" : ConfigurationManager.ConnectionStrings["System"].ConnectionString;
         }
 
         /// <summary>
@@ -50,6 +51,8 @@ namespace DotNetCommonLib
         /// </summary>
         public SqlServerDataAccess()
         {
+            if (_globalConnectionString.IsNullOrEmpty())
+                throw new Exception("來自DotNetCommonLib.SqlServerDataAccess的錯誤:抓取不到配置文件中的連接字符串。");
             _connection = new SqlConnection(_globalConnectionString);
         }
 
@@ -113,7 +116,9 @@ namespace DotNetCommonLib
         {
             Open();
             SqlCommand command = InitSqlCommand(cmdType, cmdText, parameter);
-            return command.ExecuteNonQuery();
+            int res = command.ExecuteNonQuery();
+            Close();
+            return res;
         }
 
         /// <summary>
@@ -129,7 +134,9 @@ namespace DotNetCommonLib
             Open();
             SqlCommand command = InitSqlCommand(cmdType, cmdText, parameter);
             command.Transaction = transaction as SqlTransaction;
-            return command.ExecuteNonQuery();
+            int res = command.ExecuteNonQuery();
+            Close();
+            return res;
         }
 
         /// <summary>
@@ -153,7 +160,9 @@ namespace DotNetCommonLib
         {
             Open();
             SqlCommand command = InitSqlCommand(cmdType, cmdText, parameter);
-            return command.ExecuteScalar();
+            object res = command.ExecuteScalar();
+            Close();
+            return res;
         }
 
 
@@ -182,6 +191,7 @@ namespace DotNetCommonLib
             SqlDataAdapter adapter = new SqlDataAdapter(command);
             DataSet ds = new DataSet();
             adapter.Fill(ds);
+            Close();
             return ds;
         }
 
@@ -220,6 +230,7 @@ namespace DotNetCommonLib
             SqlDataAdapter adapter = new SqlDataAdapter(command);
             DataTable dt = new DataTable();
             adapter.Fill(dt);
+            Close();
             return dt;
         }
 

@@ -84,6 +84,36 @@ namespace DotNetCommonLib
         }
 
         /// <summary>
+        /// 根據傳入的DB類型來生成對應的數據庫操作類
+        /// </summary>
+        /// <param name="DbType">數據庫類型</param>
+        /// <returns></returns>
+        public static IDataAccess Create(DataSourceType DbType)
+        {
+            switch (DbType)
+            {
+                case DataSourceType.Oracle: return new OracleDataAccess();
+                case DataSourceType.SqlServer: return new SqlServerDataAccess();
+            }
+            throw new Exception("來自DotNetCommonLib.DataAccess.DataAccessFactory的錯誤:配置文件中的數據源類型不存在或不支持！");
+        }
+
+        /// <summary>
+        /// 根據傳入的DB類型和連接字符串來生成對應的數據庫操作類
+        /// </summary>
+        /// <param name="DbType">數據庫類型</param>
+        /// <returns></returns>
+        public static IDataAccess Create(DataSourceType DbType, string connectionString)
+        {
+            switch (DbType)
+            {
+                case DataSourceType.Oracle: return new OracleDataAccess(connectionString);
+                case DataSourceType.SqlServer: return new SqlServerDataAccess(connectionString);
+            }
+            throw new Exception("來自DotNetCommonLib.DataAccess.DataAccessFactory的錯誤:配置文件中的數據源類型不存在或不支持！");
+        }
+
+        /// <summary>
         /// 以属性名和属性值来自动创建查询参数，一般在人为指定参数时使用。
         /// </summary>
         /// <param name="name"></param>
@@ -134,7 +164,7 @@ namespace DotNetCommonLib
                     }
                     return param;
                 case DataSourceType.SqlServer:
-                    if (Property.PropertyType == typeof(Guid) || Property.PropertyType==typeof(Guid?))
+                    if (Property.PropertyType == typeof(Guid) || Property.PropertyType == typeof(Guid?))
                     {
                         param = new SqlParameter(ParameterFix + Property.Name, SqlDbType.UniqueIdentifier);
                         param.Value = Value;

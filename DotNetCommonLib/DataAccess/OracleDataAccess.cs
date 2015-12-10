@@ -43,9 +43,7 @@ namespace DotNetCommonLib
         /// </summary>
         static OracleDataAccess()
         {
-            _globalConnectionString = ConfigurationManager.ConnectionStrings["System"].ConnectionString ?? ConfigurationManager.AppSettings.Get("System");
-            if (string.IsNullOrEmpty(_globalConnectionString))
-                throw new Exception("來自DotNetCommonLib.OracleDataAccess的錯誤:抓取不到配置文件中的連接字符串。");
+            _globalConnectionString = ConfigurationManager.ConnectionStrings["System"] == null ? "" : ConfigurationManager.ConnectionStrings["System"].ConnectionString;
         }
 
         /// <summary>
@@ -53,6 +51,8 @@ namespace DotNetCommonLib
         /// </summary>
         public OracleDataAccess()
         {
+            if (string.IsNullOrEmpty(_globalConnectionString))
+                throw new Exception("來自DotNetCommonLib.OracleDataAccess的錯誤:抓取不到配置文件中的連接字符串。");
             _connection = new OracleConnection(_globalConnectionString);
         }
 
