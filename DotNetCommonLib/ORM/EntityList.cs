@@ -132,13 +132,13 @@ namespace DotNetCommonLib
                     item.SetValue(entity, row[item.Name] ?? 0, null);
                 //可空數字類型
                 else if (item.PropertyType == typeof(int?) || item.PropertyType == typeof(long?) || item.PropertyType == typeof(double?) || item.PropertyType == typeof(decimal?))
-                    item.SetValue(entity, row[item.Name], null);
+                    item.SetValue(entity, Convert.IsDBNull(row[item.Name]) ? null : row[item.Name], null);
                 //布爾類型
                 else if (item.PropertyType == typeof(bool))
                     item.SetValue(entity, row[item.Name] ?? false, null);
                 //可空布爾類型
                 else if (item.PropertyType == typeof(bool?))
-                    item.SetValue(entity, row[item.Name], null);
+                    item.SetValue(entity, Convert.IsDBNull(row[item.Name]) ? null : row[item.Name], null);
                 //時間類型
                 else if (item.PropertyType == typeof(DateTime))
                 {
@@ -150,7 +150,7 @@ namespace DotNetCommonLib
                 //可空時間類型
                 else if (item.PropertyType == typeof(DateTime?))
                 {
-                    if (row[item.Name] == null)
+                    if (row[item.Name] == null || Convert.IsDBNull(row[item.Name]))
                         item.SetValue(entity, null, null);
                     else
                     {
